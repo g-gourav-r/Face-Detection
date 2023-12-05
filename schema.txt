@@ -1,0 +1,23 @@
+CREATE TABLE User (
+    user_id INTEGER PRIMARY KEY,
+    first_name TEXT,
+    last_name TEXT,
+    username TEXT UNIQUE,
+    password TEXT,
+    is_admin BOOLEAN
+);
+
+CREATE TABLE Target (
+    target_id INTEGER PRIMARY KEY,
+    name TEXT,
+    image BLOB -- Assuming you want to store the image data directly in the database
+);
+
+CREATE TABLE Log (
+    log_id INTEGER PRIMARY KEY,
+    name TEXT,
+    target_id INTEGER REFERENCES Target(target_id),
+    target_image BLOB, -- Assuming this column stores the image data directly in the database
+    time_date DATETIME,
+    camera_location TEXT
+);
