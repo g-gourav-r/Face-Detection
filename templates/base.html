@@ -1,21 +1,14 @@
+<!-- Template for dark/light mode -->
 <!doctype html>
 <html lang="en" data-bs-theme="auto">
-  <head><script src="../assets/js/color-modes.js"></script>
-
+  <head>
+    <script src="../static//assets/js/color-modes.js"></script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
-    <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
-    <meta name="generator" content="Hugo 0.118.2">
-    <title>Signin Template · Bootstrap v5.3</title>
-
-    <link rel="canonical" href="https://getbootstrap.com/docs/5.3/examples/sign-in/">
-
-    
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@docsearch/css@3">
-
-<link href="../assets/dist/css/bootstrap.min.css" rel="stylesheet">
+    {% block head%}{% endblock %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  </head>
 
     <style>
       .bd-placeholder-img {
@@ -94,7 +87,9 @@
       .bd-mode-toggle .dropdown-menu .active .bi {
         display: block !important;
       }
+      
     </style>
+    {% block style%}{% endblock %}
 
     
     <!-- Custom styles for this template -->
@@ -151,51 +146,8 @@
         </li>
       </ul>
     </div>
-
-    
-    <main class="form-signin w-100 m-auto">
-        <div class="container mt-5">
-            <h2 class="mb-4">Upload the picture</h2>
-
-            <form>
-                <div class="mb-3">
-                    <label for="nameInput" class="form-label">Name</label>
-                    <input type="text" class="form-control" id="nameInput" placeholder="Enter the name" required>
-                </div>
-
-                <div class="mb-3">
-                    <label for="fileInput" class="form-label">Upload JPG File</label>
-                    <input type="file" class="form-control" id="fileInput" accept=".jpg" required>
-                    <div class="invalid-feedback" id="fileValidationFeedback">
-                        Please upload a valid JPG file.
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn-primary">Submit</button>
-            </form>
-        </div>
-    </main>
-    
-<script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    function validateAndSubmit() {
-        // Reset previous validation state
-        document.getElementById("fileInput").classList.remove("is-invalid");
-        document.getElementById("fileValidationFeedback").style.display = "none";
-
-        // Validate file type
-        const fileInput = document.getElementById("fileInput");
-        const allowedExtensions = /(\.jpg)$/i;
-        if (!allowedExtensions.exec(fileInput.value)) {
-            // Invalid file type
-            fileInput.classList.add("is-invalid");
-            document.getElementById("fileValidationFeedback").style.display = "block";
-        } else {
-            // Valid file type, submit the form or perform additional actions
-            document.getElementById("uploadForm").submit();
-        }
-    }
-</script>
-
+    {% block body%}
+    {% endblock %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     </body>
 </html>

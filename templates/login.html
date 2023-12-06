@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block head%} <title>Login</title> {% endblock %}
+
+{% block style%}
+ <style>
+html,
+body {
+  height: 100%;
+}
+
+.form-signin {
+  max-width: 330px;
+  padding: 1rem;
+}
+
+.form-signin .form-floating:focus-within {
+  z-index: 2;
+}
+
+.form-signin input[type="email"] {
+  margin-bottom: -1px;
+}
+
+.form-signin input[type="password"] {
+  margin-bottom: 10px;
+}
+</style>
+{% endblock %}
+
+{% block body%}
+<main class="form-signin w-100 m-auto">
+<form action="" method="post">
+  <h1 style="text-align: center;" class="h3 mb-3 fw-normal">Please sign in</h1>
+
+  <div class="form-floating">
+    <input type="text" class="form-control" placeholder="Username" name="username" value="{{
+      request.form.username }}">
+    <label for="username">User Name</label>
+  </div>
+  <br>
+  <div class="form-floating">
+    <input type="password" class="form-control" placeholder="Password" name="password" value="{{
+      request.form.password }}">
+    <label for="password">Password</label>
+  </div>
+  <br>
+  <input class="btn btn-primary w-100 py-2" type="submit" value="Login">
+
+</form>
+{% if error %}
+<p class="error"><strong>Error:</strong> {{ error }}
+{% endif %}
+</div>
+</main>
+{% endblock %}
+
+
+<!-- 
+  <form  >
+    <div class="mb-3">
+      <label for="Username" class="form-label">User name</label>
+
+    </div>
+    <div class="mb-3">
+      <label for="password" class="form-label">Password</label>
+
+    </div>
+
+
+  </form> -->
+
