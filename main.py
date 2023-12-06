@@ -21,7 +21,10 @@ def login():
                 error = 'User does not exist.'
             else:
                 if user[4] == hashed_password and user[3] == username:
-                    return "Success"
+                    if user[5] == 0 :
+                        return "Welcome User"
+                    else:
+                        return "Welcome Admin"
                 else:
                     error = 'Wrong Password'
         except Exception as e:
