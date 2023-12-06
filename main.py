@@ -14,17 +14,19 @@ def login():
 
         conn = sqlite3.connect('your_database.db')
         c = conn.cursor()
+        print(conn)
         try:
             c.execute('SELECT * FROM user WHERE username=?', (username,))
             user = c.fetchone()
+            print(user)
             if user is None:
                 error = 'User does not exist.'
             else:
                 if user[4] == hashed_password and user[3] == username:
                     if user[5] == 0 :
-                        return "Welcome User"
+                        return render_template('user_dashboard.html')
                     else:
-                        return "Welcome Admin"
+                        return render_template('admin_dashboard.html')
                 else:
                     error = 'Wrong Password'
         except Exception as e:
