@@ -1,10 +1,33 @@
-from flask import Flask, render_template, redirect, url_for, request
+from flask import Flask, render_template, redirect, url_for, request, Response
 import sqlite3
 import hashlib
 import os
-
+from PIL import Image
+import sqlite3
+from io import BytesIO
+import base64
+import cv2
 
 app = Flask(__name__)
+video_capture = cv2.VideoCapture(0)  # 0 corresponds to the default camera
+
+def generate_frames():
+    while True:
+        success, frame = video_capture.read()
+        if not success:
+            break
+        else:
+            ret, buffer = cv2.imencode('.jpg', frame)
+            frame = buffer.tobytes()
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+
+@app.route('/admin_dashboard')
+def admin_dashboard():
+    data = show_data()
+    return render_template('admin_dashboard.html', targets=data)
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -28,7 +51,8 @@ def login():
                     if user[5] == 0 :
                         return render_template('user_dashboard.html')
                     else:
-                        return render_template('admin_dashboard.html')
+                        return redirect(url_for('admin_dashboard'))
+
                 else:
                     error = 'Wrong Password'
         except Exception as e:
@@ -38,6 +62,7 @@ def login():
             conn.close()
 
     return render_template('login.html', error=error)
+
 
 
 def save_file_and_update_db(name, file):
@@ -62,11 +87,51 @@ def save_file_and_update_db(name, file):
 
     with sqlite3.connect("your_database.db") as conn:
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO pictures (name, image) VALUES (?, ?)", (name, image_data))
+        cursor.execute("INSERT INTO Target (name, image, status) VALUES (?, ?,0)", (name, image_data))
         last_row_id = cursor.lastrowid
+        print(last_row_id)
+        cursor.execute("INSERT INTO Location (target_id, location, time, location_image) VALUES (?, NULL, NULL, NULL)", (last_row_id,))
 
     return last_row_id 
 
+
+def show_data():
+    connection = sqlite3.connect("your_database.db")
+    cursor = connection.cursor()
+
+    # Fetch data from Target table
+    cursor.execute("SELECT * FROM Target")
+    targets = cursor.fetchall()
+
+    decoded_targets = []
+    for target in targets:
+        target_id, name, image, status = target
+
+        # Fetch additional data from Location table based on target_id
+        cursor.execute("SELECT location, time, location_image FROM Location WHERE target_id=?", (target_id,))
+        location_data = cursor.fetchone()
+
+        # Ensure the image data is properly base64-encoded
+        try:
+            decoded_image = base64.b64encode(image).decode('utf-8')
+        except Exception as e:
+            print(f"Error decoding image: {e}")
+            decoded_image = None
+
+        # Combine data from Target and Location
+        decoded_targets.append({
+            'target_id': target_id,
+            'name': name,
+            'decoded_image': decoded_image,
+            'status': status,
+            'location': location_data[0] if location_data else None,
+            'time': location_data[1] if location_data else None,
+            'decoded_location_image': base64.b64encode(location_data[2]).decode('utf-8') if location_data and location_data[2] else None
+        })
+
+    connection.close()
+
+    return decoded_targets
 
 @app.route('/add_user', methods=['GET', 'POST'])
 def add_user():
@@ -164,6 +229,12 @@ def upload_picture():
             return render_template('add_person.html', entry_id=last_row_id, show_success=True)
 
     return render_template('add_person.html', show_success=False)
+
+
+@app.route('/video_feed')
+def video_feed():
+    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
 
 if __name__ == '__main__':
     app.run(debug=True)
