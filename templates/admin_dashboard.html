@@ -213,14 +213,15 @@
               </a>
             </li>
             <hr class="my-3">
+ 
             <li class="nav-item">
-              <a class="nav-link d-flex align-items-center gap-2">
+              <a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('add_user') }}">
                 <svg class="bi"><use xlink:href="#file-earmark"/></svg>
-                Add a User
+                Add a user
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link d-flex align-items-center gap-2" href="#">
+              <a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('manage_user') }}">
                 <svg class="bi"><use xlink:href="#people"/></svg>
                 Manage Users
               </a>
@@ -238,7 +239,7 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link d-flex align-items-center gap-2" href="#">
+              <a class="nav-link d-flex align-items-center gap-2" href="{{ url_for('upload_picture') }}">
                 <svg class="bi"><use xlink:href="#puzzle"/></svg>
                 Add a Missing Person
               </a>
