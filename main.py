@@ -7,6 +7,7 @@ import sqlite3
 from io import BytesIO
 import base64
 import cv2
+from datetime import datetime
 
 app = Flask(__name__)
 video_capture = cv2.VideoCapture(0)  # 0 corresponds to the default camera
@@ -83,55 +84,50 @@ def save_file_and_update_db(name, file):
 
     with open(file_path, 'rb') as image_file:
         image_data = image_file.read()
+        current_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 
     with sqlite3.connect("your_database.db") as conn:
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO Target (name, image, status) VALUES (?, ?,0)", (name, image_data))
+        cursor.execute("INSERT INTO missingPerson (name, image, status,location,location_image,time,to_be_tracked,uploadtime) VALUES (?, ?,0,NULL,NULL,NULL,1,CURRENT_TIMESTAMP)", (name, image_data))
         last_row_id = cursor.lastrowid
-        print(last_row_id)
-        cursor.execute("INSERT INTO Location (target_id, location, time, location_image) VALUES (?, NULL, NULL, NULL)", (last_row_id,))
 
     return last_row_id 
-
 
 def show_data():
     connection = sqlite3.connect("your_database.db")
     cursor = connection.cursor()
-
-    # Fetch data from Target table
-    cursor.execute("SELECT * FROM Target")
+    cursor.execute("SELECT * FROM missingPerson")
     targets = cursor.fetchall()
 
     decoded_targets = []
     for target in targets:
-        target_id, name, image, status = target
-
-        # Fetch additional data from Location table based on target_id
-        cursor.execute("SELECT location, time, location_image FROM Location WHERE target_id=?", (target_id,))
-        location_data = cursor.fetchone()
-
-        # Ensure the image data is properly base64-encoded
+        target_id, name, image, status,location,location_image,time,to_be_tracked,uploadtime = target
         try:
             decoded_image = base64.b64encode(image).decode('utf-8')
         except Exception as e:
             print(f"Error decoding image: {e}")
             decoded_image = None
-
-        # Combine data from Target and Location
         decoded_targets.append({
             'target_id': target_id,
             'name': name,
             'decoded_image': decoded_image,
             'status': status,
-            'location': location_data[0] if location_data else None,
-            'time': location_data[1] if location_data else None,
-            'decoded_location_image': base64.b64encode(location_data[2]).decode('utf-8') if location_data and location_data[2] else None
+            'last location': location,
+            'time': time,
+            'decoded_location_image': base64.b64encode(location_image).decode('utf-8') if location_image else None,
+            'to_be_tracked':to_be_tracked,
+            'uploadTime':uploadtime
         })
 
     connection.close()
 
     return decoded_targets
+@app.route('/logs')
+def logs():
+    data = show_data()
+    return render_template('logs.html',  data=data)
+
 
 @app.route('/add_user', methods=['GET', 'POST'])
 def add_user():
@@ -187,12 +183,10 @@ def manage_user():
         users = []
     conn.close()
     return render_template('manage_user.html', users=users)
+
 @app.route('/toggle_admin/<int:user_id>', methods=['POST'])
 def toggle_admin(user_id):
-    # Get the value of 'is_admin' from the form data
     is_admin = int(request.form['is_admin'])
-
-    # Update the 'is_admin' value in the database
     conn = sqlite3.connect('your_database.db')
     try:
         with conn:
@@ -201,7 +195,6 @@ def toggle_admin(user_id):
         print(f"An error occurred while updating is_admin: {e}")
     finally:
         conn.close()
-
     return redirect(url_for('manage_user'))
 
 @app.route('/delete_user/<int:user_id>', methods=['POST'])
@@ -217,6 +210,21 @@ def delete_user(user_id):
         conn.close()
 
     return redirect(url_for('manage_user'))
+
+@app.route('/toggle_search/<int:id>', methods=['POST'])
+def toggle_search(id):
+    to_be_tracked = int(request.form['to_be_tracked'])
+    print(id,to_be_tracked)
+    conn = sqlite3.connect('your_database.db')
+    try:
+        with conn:
+            conn.execute("UPDATE missingPerson SET to_be_tracked = ? WHERE id = ?", (to_be_tracked, id))
+    except Exception as e:
+        print(f"An error occurred while updating to_be_tracked: {e}")
+    finally:
+        conn.close()
+    return redirect(url_for('logs'))
+
 
 @app.route('/upload_picture', methods=['GET', 'POST'])
 def upload_picture():
